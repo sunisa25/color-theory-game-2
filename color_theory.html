@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ศูนย์การเรียนรู้ทฤษฎีสี - เกมส์ทดสอบความรู้</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #feca57 100%);
+            min-height: 100vh;
+        }
+        
+        .learning-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+        
+        .learning-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            color: white;
+        }
+        
+        .quiz-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quiz-option:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .quiz-option.correct {
+            border-color: #10b981;
+            background-color: #d1fae5;
+        }
+        
+        .quiz-option.incorrect {
+            border-color: #ef4444;
+            background-color: #fee2e2;
+        }
+        
+        .color-wheel {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                red 0deg,
+                orange 30deg,
+                yellow 60deg,
+                lime 90deg,
+                green 120deg,
+                cyan 150deg,
+                blue 180deg,
+                indigo 210deg,
+                purple 240deg,
+                magenta 270deg,
+                pink 300deg,
+                red 360deg
+            );
+            margin: 20px auto;
+            position: relative;
+        }
+        
+        .color-wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .color-demo {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            margin: 10px;
+            display: inline-block;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .color-harmony-demo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .temperature-demo {
+            width: 300px;
+            height: 100px;
+            border-radius: 12px;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .warm-colors {
+            background: linear-gradient(90deg, #ff4757, #ff6348, #ff7675, #fdcb6e, #f39c12);
+        }
+        
+        .cool-colors {
+            background: linear-gradient(90deg, #74b9ff, #0984e3, #00b894, #00cec9, #6c5ce7);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform-origin: 50% 50%;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: confetti-fall 3s ease-in infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .topic-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .difficulty-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .difficulty-easy { background: #d1fae5; color: #065f46; }
+        .difficulty-medium { background: #fef3c7; color: #92400e; }
+        .difficulty-hard { background: #fee2e2; color: #991b1b; }
+        
+        .color-interactive {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-interactive:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50"></div>
+    
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-3">🎨 ศูนย์การเรียนรู้ทฤษฎีสี</h1>
+            <p class="text-xl text-white opacity-90">เกมส์ทดสอบความรู้และแหล่งเรียนรู้เรื่องสีครบครัน</p>
+        </header>
+        
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <button class="tab-button active px-6 py-3 rounded-xl font-medium transition-all duration-300" data-tab="home">
+                🏠 หน้าหลัก
+            </button>
+            <button class="tab-button px-6 py-3 rounded-xl font-medium bg-white text-gray-700 hover:bg-gray-100" data-tab="learn">
+                📚 เรียนรู้
+            </button>
+            <button class="tab-button px-6 py-3 rounded-xl font-medium bg-white text-gray-700 hover:bg-gray-100" data-tab="quiz">
+                🎮 เกมส์ทดสอบ
+            </button>
+            <button class="tab-button px-6 py-3 rounded-xl font-medium bg-white text-gray-700 hover:bg-gray-100" data-tab="results">
+                📊 ผลคะแนน
+            </button>
+        </div>
+        
+        <!-- Home Tab -->
+        <div id="home-tab" class="tab-content">
+            <div class="learning-card rounded-2xl shadow-2xl p-8 mb-8">
+                <div class="text-center mb-8">
+                    <div class="text-8xl mb-6">🌈</div>
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">ยินดีต้อนรับสู่โลกแห่งสี</h2>
+                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                        ศูนย์การเรียนรู้ครบครันเกี่ยวกับทฤษฎีสี ตั้งแต่วงล้อสี สีขั้นที่ 1-3 สีโทนร้อน-เย็น 
+                        สีคุมโทน สีคู่ตรงข้าม และการใช้สีอย่างมีประสิทธิภาพ พร้อมเกมส์ทดสอบที่สนุกและท้าทาย
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gradient-to-br from-red-400 to-yellow-400 rounded-xl p-6 text-white relative">
+                        <div class="topic-icon">🎨</div>
+                        <h3 class="text-xl font-bold mb-2">วงล้อสี</h3>
+                        <p class="text-sm opacity-90">สีขั้นที่ 1-3 ความสัมพันธ์ของสี</p>
+                        <div class="difficulty-badge difficulty-easy">พื้นฐาน</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-blue-400 to-purple-400 rounded-xl p-6 text-white relative">
+                        <div class="topic-icon">🌡️</div>
+                        <h3 class="text-xl font-bold mb-2">อุณหภูมิสี</h3>
+                        <p class="text-sm opacity-90">สีโทนร้อน สีโทนเย็น การใช้งาน</p>
+                        <div class="difficulty-badge difficulty-medium">ปานกลาง</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-400 to-teal-400 rounded-xl p-6 text-white relative">
+                        <div class="topic-icon">🎯</div>
+                        <h3 class="text-xl font-bold mb-2">สีคุมโทน</h3>
+                        <p class="text-sm opacity-90">การควบคุมโทนสี ความเข้มข้น</p>
+                        <div class="difficulty-badge difficulty-hard">ยาก</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-pink-400 to-red-400 rounded-xl p-6 text-white relative">
+                        <div class="topic-icon">⚖️</div>
+                        <h3 class="text-xl font-bold mb-2">สีคู่ตรงข้าม</h3>
+                        <p class="text-sm opacity-90">การจับคู่สี ความกลมกลืน</p>
+                        <div class="difficulty-badge difficulty-medium">ปานกลาง</div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <button class="bg-gradient-to-r from-red-500 to-yellow-500 hover:from-red-600 hover:to-yellow-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition duration-300 transform hover:scale-105 mr-4" onclick="switchTab('learn')">
+                        📚 เริ่มเรียนรู้
+                    </button>
+                    <button class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition duration-300 transform hover:scale-105" onclick="switchTab('quiz')">
+                        🎮 ทดสอบเลย
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Learning Tab -->
+        <div id="learn-tab" class="tab-content hidden">
+            <div class="space-y-8">
+                <!-- Color Wheel Section -->
+                <div class="learning-card rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">🎨 วงล้อสีและสีขั้นต่างๆ</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="text-center">
+                            <h3 class="text-2xl font-semibold mb-4 text-red-600">วงล้อสี (Color Wheel)</h3>
+                            <div class="color-wheel mx-auto mb-4"></div>
+                            <p class="text-gray-600">วงล้อสีแสดงความสัมพันธ์ของสีต่างๆ และเป็นเครื่องมือสำคัญในการเลือกใช้สี</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4 text-red-600">สีขั้นที่ 1 (Primary Colors)</h3>
+                            <div class="text-center mb-6">
+                                <div class="color-demo bg-red-500 color-interactive" title="สีแดง"></div>
+                                <div class="color-demo bg-blue-500 color-interactive" title="สีน้ำเงิน"></div>
+                                <div class="color-demo bg-yellow-400 color-interactive" title="สีเหลือง"></div>
+                                <p class="text-sm mt-2 text-gray-600">แดง น้ำเงิน เหลือง</p>
+                            </div>
+                            <p class="text-gray-600 mb-4">สีขั้นที่ 1 คือสีพื้นฐานที่ไม่สามารถผสมจากสีอื่นได้ เป็นต้นกำเนิดของสีทั้งหมด</p>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-orange-600">สีขั้นที่ 2 (Secondary Colors)</h3>
+                            <div class="text-center mb-6">
+                                <div class="color-demo bg-green-500 color-interactive" title="สีเขียว = น้ำเงิน + เหลือง"></div>
+                                <div class="color-demo bg-orange-500 color-interactive" title="สีส้ม = แดง + เหลือง"></div>
+                                <div class="color-demo bg-purple-500 color-interactive" title="สีม่วง = แดง + น้ำเงิน"></div>
+                                <p class="text-sm mt-2 text-gray-600">เขียว ส้ม ม่วง</p>
+                            </div>
+                            <p class="text-gray-600 mb-4">สีขั้นที่ 2 เกิดจากการผสมสีขั้นที่ 1 สองสีเข้าด้วยกัน</p>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-yellow-600">สีขั้นที่ 3 (Tertiary Colors)</h3>
+                            <div class="text-center mb-6">
+                                <div class="color-demo color-interactive" style="background: #ff6b35" title="แดงส้ม"></div>
+                                <div class="color-demo color-interactive" style="background: #f7931e" title="เหลืองส้ม"></div>
+                                <div class="color-demo color-interactive" style="background: #9acd32" title="เหลืองเขียว"></div>
+                                <div class="color-demo color-interactive" style="background: #20b2aa" title="น้ำเงินเขียว"></div>
+                                <div class="color-demo color-interactive" style="background: #4169e1" title="น้ำเงินม่วง"></div>
+                                <div class="color-demo color-interactive" style="background: #da70d6" title="แดงม่วง"></div>
+                                <p class="text-sm mt-2 text-gray-600">สีขั้นที่ 3 มี 6 สี</p>
+                            </div>
+                            <p class="text-gray-600">สีขั้นที่ 3 เกิดจากการผสมสีขั้นที่ 1 กับสีขั้นที่ 2 ที่อยู่ข้างเคียงกัน</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Color Temperature Section -->
+                <div class="learning-card rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">🌡️ อุณหภูมิของสี</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4 text-red-600">สีโทนร้อน (Warm Colors)</h3>
+                            <div class="temperature-demo warm-colors">
+                                แดง ส้ม เหลือง
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg mt-4">
+                                <h4 class="font-semibold text-red-800 mb-2">✨ คุณสมบัติ</h4>
+                                <ul class="text-sm text-red-700 space-y-1">
+                                    <li>• ให้ความรู้สึกอบอุ่น ร้อนแรง</li>
+                                    <li>• สร้างความรู้สึกกระตือรือร้น</li>
+                                    <li>• ดูเด่น โดดเด่น เข้ามาหาตา</li>
+                                    <li>• เหมาะกับการดึงดูดความสนใจ</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-red-50 p-4 rounded-lg mt-4">
+                                <h4 class="font-semibold text-red-800 mb-2">🎯 การใช้งาน</h4>
+                                <ul class="text-sm text-red-700 space-y-1">
+                                    <li>• ห้องนั่งเล่น ห้องครัว</li>
+                                    <li>• โฆษณา ป้ายประชาสัมพันธ์</li>
+                                    <li>• งานศิลปะที่ต้องการความมีชีวิตชีวา</li>
+                                    <li>• การตกแต่งในฤดูหนาว</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4 text-blue-600">สีโทนเย็น (Cool Colors)</h3>
+                            <div class="temperature-demo cool-colors">
+                                น้ำเงิน เขียว ม่วง
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">✨ คุณสมบัติ</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• ให้ความรู้สึกเย็น สงบ</li>
+                                    <li>• สร้างความรู้สึกผ่อนคลาย</li>
+                                    <li>• ดูถอยหลัง ไม่เด่นเท่าสีร้อน</li>
+                                    <li>• เหมาะกับการสร้างบรรยากาศสงบ</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">🎯 การใช้งาน</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• ห้องนอน ห้องน้ำ</li>
+                                    <li>• สถานที่พักผ่อน สปา</li>
+                                    <li>• งานศิลปะที่ต้องการความสงบ</li>
+                                    <li>• การตกแต่งในฤดูร้อน</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 bg-gradient-to-r from-red-100 to-blue-100 p-6 rounded-xl">
+                        <h4 class="text-xl font-semibold mb-4 text-center">💡 เคล็ดลับการใช้อุณหภูมิสี</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🔥</div>
+                                <p class="font-medium">สีร้อน + สีเย็น</p>
+                                <p class="text-sm text-gray-600">สร้างความสมดุลและน่าสนใจ</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">⚖️</div>
+                                <p class="font-medium">สัดส่วน 70:30</p>
+                                <p class="text-sm text-gray-600">ใช้สีหลัก 70% สีเสริม 30%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Color Harmony Section -->
+                <div class="learning-card rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">⚖️ สีคู่ตรงข้ามและการจับคู่สี</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4 text-purple-600">สีคู่ตรงข้าม (Complementary Colors)</h3>
+                            
+                            <div class="space-y-6">
+                                <div class="color-harmony-demo">
+                                    <div class="color-demo bg-red-500"></div>
+                                    <span class="text-2xl">+</span>
+                                    <div class="color-demo bg-green-500"></div>
+                                    <span class="text-sm text-gray-600">แดง + เขียว</span>
+                                </div>
+                                
+                                <div class="color-harmony-demo">
+                                    <div class="color-demo bg-blue-500"></div>
+                                    <span class="text-2xl">+</span>
+                                    <div class="color-demo bg-orange-500"></div>
+                                    <span class="text-sm text-gray-600">น้ำเงิน + ส้ม</span>
+                                </div>
+                                
+                                <div class="color-harmony-demo">
+                                    <div class="color-demo bg-yellow-400"></div>
+                                    <span class="text-2xl">+</span>
+                                    <div class="color-demo bg-purple-500"></div>
+                                    <span class="text-sm text-gray-600">เหลือง + ม่วง</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-purple-50 p-4 rounded-lg mt-6">
+                                <h4 class="font-semibold text-purple-800 mb-2">✨ คุณสมบัติ</h4>
+                                <ul class="text-sm text-purple-700 space-y-1">
+                                    <li>• สร้างความตัดกันสูง (High Contrast)</li>
+                                    <li>• ดูสดใส มีชีวิตชีวา</li>
+                                    <li>• ดึงดูดความสนใจได้ดี</li>
+                                    <li>• ใช้ในการเน้นจุดสำคัญ</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4 text-green-600">การจับคู่สีแบบอื่นๆ</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-green-800 mb-2">🔺 สีสามเหลี่ยม (Triadic)</h4>
+                                    <div class="color-harmony-demo">
+                                        <div class="color-demo bg-red-500"></div>
+                                        <div class="color-demo bg-yellow-400"></div>
+                                        <div class="color-demo bg-blue-500"></div>
+                                    </div>
+                                    <p class="text-sm text-green-700">สีที่อยู่ห่างกัน 120 องศาในวงล้อสี</p>
+                                </div>
+                                
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-blue-800 mb-2">📐 สีคล้ายคลึง (Analogous)</h4>
+                                    <div class="color-harmony-demo">
+                                        <div class="color-demo bg-blue-500"></div>
+                                        <div class="color-demo bg-teal-500"></div>
+                                        <div class="color-demo bg-green-500"></div>
+                                    </div>
+                                    <p class="text-sm text-blue-700">สีที่อยู่ข้างเคียงกันในวงล้อสี</p>
+                                </div>
+                                
+                                <div class="bg-yellow-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-yellow-800 mb-2">🎨 สีเดี่ยว (Monochromatic)</h4>
+                                    <div class="color-harmony-demo">
+                                        <div class="color-demo bg-blue-300"></div>
+                                        <div class="color-demo bg-blue-500"></div>
+                                        <div class="color-demo bg-blue-700"></div>
+                                    </div>
+                                    <p class="text-sm text-yellow-700">สีเดียวกันในโทนต่างๆ</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Color Control Section -->
+                <div class="learning-card rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">🎯 สีคุมโทนและการควบคุมสี</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4 text-indigo-600">ความสว่าง (Value)</h3>
+                            <div class="space-y-2">
+                                <div class="h-8 bg-gray-900 rounded flex items-center justify-center text-white text-xs">เข้มที่สุด</div>
+                                <div class="h-8 bg-gray-700 rounded flex items-center justify-center text-white text-xs">เข้ม</div>
+                                <div class="h-8 bg-gray-500 rounded flex items-center justify-center text-white text-xs">กลาง</div>
+                                <div class="h-8 bg-gray-300 rounded flex items-center justify-center text-gray-800 text-xs">อ่อน</div>
+                                <div class="h-8 bg-gray-100 rounded flex items-center justify-center text-gray-800 text-xs">อ่อนที่สุด</div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">ความสว่าง-เข้มของสี จากขาวไปดำ</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4 text-pink-600">ความอิ่มตัว (Saturation)</h3>
+                            <div class="space-y-2">
+                                <div class="h-8 bg-red-600 rounded flex items-center justify-center text-white text-xs">อิ่มตัวสูง</div>
+                                <div class="h-8 bg-red-500 rounded flex items-center justify-center text-white text-xs">อิ่มตัวปานกลาง</div>
+                                <div class="h-8 bg-red-400 rounded flex items-center justify-center text-white text-xs">อิ่มตัวต่ำ</div>
+                                <div class="h-8 bg-red-300 rounded flex items-center justify-center text-gray-800 text-xs">อิ่มตัวต่ำมาก</div>
+                                <div class="h-8 bg-gray-400 rounded flex items-center justify-center text-white text-xs">ไม่อิ่มตัว</div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">ความเข้มข้นของสี จากสีสดใสไปจืด</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4 text-teal-600">โทนสี (Hue)</h3>
+                            <div class="space-y-2">
+                                <div class="h-8 bg-red-500 rounded flex items-center justify-center text-white text-xs">แดง</div>
+                                <div class="h-8 bg-orange-500 rounded flex items-center justify-center text-white text-xs">ส้ม</div>
+                                <div class="h-8 bg-yellow-500 rounded flex items-center justify-center text-gray-800 text-xs">เหลือง</div>
+                                <div class="h-8 bg-green-500 rounded flex items-center justify-center text-white text-xs">เขียว</div>
+                                <div class="h-8 bg-blue-500 rounded flex items-center justify-center text-white text-xs">น้ำเงิน</div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">ตัวสีเอง ตำแหน่งในวงล้อสี</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-xl">
+                        <h4 class="text-xl font-semibold mb-4 text-center">🎨 เทคนิคการคุมโทนสี</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-semibold mb-2">🔧 การปรับแต่งสี</h5>
+                                <ul class="text-sm space-y-1">
+                                    <li>• <strong>Tint:</strong> เพิ่มสีขาว ทำให้สีอ่อนลง</li>
+                                    <li>• <strong>Shade:</strong> เพิ่มสีดำ ทำให้สีเข้มลง</li>
+                                    <li>• <strong>Tone:</strong> เพิ่มสีเทา ทำให้สีจืดลง</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold mb-2">🎯 การใช้งาน</h5>
+                                <ul class="text-sm space-y-1">
+                                    <li>• สร้างความลึกและมิติ</li>
+                                    <li>• ควบคุมอารมณ์และบรรยากาศ</li>
+                                    <li>• สร้างจุดเด่นและจุดรอง</li>
+                                    <li>• ปรับความเข้ากันของสี</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="bg-gradient-to-r from-red-500 to-purple-500 hover:from-red-600 hover:to-purple-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition duration-300 transform hover:scale-105" onclick="switchTab('quiz')">
+                        🎮 ทดสอบความรู้
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quiz Tab -->
+        <div id="quiz-tab" class="tab-content hidden">
+            <div class="learning-card rounded-2xl shadow-2xl p-8">
+                <!-- Quiz Progress -->
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="relative w-16 h-16">
+                            <svg class="progress-ring w-16 h-16" viewBox="0 0 120 120">
+                                <circle class="progress-ring-circle stroke-gray-200" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                                <circle id="progress-circle" class="progress-ring-circle stroke-red-500" stroke-width="8" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="progress-text" class="text-sm font-bold text-red-500">0%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">ข้อที่ <span id="current-question-num">1</span> จาก <span id="total-questions-num">25</span></div>
+                            <div class="text-lg font-semibold">คะแนน: <span id="current-score">0</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="correct-answers">0</div>
+                            <div class="text-xs text-gray-600">ถูก</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-red-600" id="wrong-answers">0</div>
+                            <div class="text-xs text-gray-600">ผิด</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quiz Start Screen -->
+                <div id="quiz-start" class="text-center py-12">
+                    <div class="text-6xl mb-6">🌈</div>
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">เกมส์ทดสอบความรู้ทฤษฎีสี</h2>
+                    <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                        ทดสอบความรู้ครบทั้ง 4 หัวข้อ ผ่านคำถาม 25 ข้อที่สุ่มใหม่ทุกครั้ง 
+                        เพื่อป้องกันการลอกกัน พร้อมคำอธิบายในทุกข้อ
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
+                        <div class="p-4 bg-red-50 rounded-lg">
+                            <div class="text-2xl mb-2">🎨</div>
+                            <h3 class="font-semibold">วงล้อสี</h3>
+                            <p class="text-sm text-gray-600">สีขั้นที่ 1-3 ความสัมพันธ์ของสี</p>
+                        </div>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <div class="text-2xl mb-2">🌡️</div>
+                            <h3 class="font-semibold">อุณหภูมิสี</h3>
+                            <p class="text-sm text-gray-600">สีโทนร้อน สีโทนเย็น การใช้งาน</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl mb-2">🎯</div>
+                            <h3 class="font-semibold">สีคุมโทน</h3>
+                            <p class="text-sm text-gray-600">การควบคุมโทนสี ความเข้มข้น</p>
+                        </div>
+                        <div class="p-4 bg-purple-50 rounded-lg">
+                            <div class="text-2xl mb-2">⚖️</div>
+                            <h3 class="font-semibold">สีคู่ตรงข้าม</h3>
+                            <p class="text-sm text-gray-600">การจับคู่สี ความกลมกลืน</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg">
+                            <span class="text-xl">🔀</span>
+                            <span class="font-medium">คำถามสุ่มใหม่ทุกครั้ง - ป้องกันการลอกกัน</span>
+                        </div>
+                    </div>
+                    
+                    <button id="start-quiz-btn" class="bg-gradient-to-r from-red-500 to-purple-500 hover:from-red-600 hover:to-purple-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition duration-300 transform hover:scale-105">
+                        🚀 เริ่มทำแบบทดสอบ
+                    </button>
+                </div>
+                
+                <!-- Quiz Question Screen -->
+                <div id="quiz-question" class="hidden">
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <span id="question-topic-icon" class="text-2xl"></span>
+                                <span id="question-topic" class="text-lg font-semibold text-red-600"></span>
+                            </div>
+                            <div id="question-difficulty" class="difficulty-badge"></div>
+                        </div>
+                        
+                        <h3 id="question-title" class="text-2xl font-bold mb-4 text-center"></h3>
+                        <div id="question-visual" class="flex justify-center mb-6">
+                            <!-- Visual elements will be inserted here -->
+                        </div>
+                        <p id="question-text" class="text-lg text-center text-gray-700"></p>
+                    </div>
+                    
+                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <!-- Options will be inserted here -->
+                    </div>
+                    
+                    <div id="quiz-feedback" class="hidden text-center py-6">
+                        <div id="feedback-icon" class="text-6xl mb-4"></div>
+                        <div id="feedback-text" class="text-xl font-semibold mb-4"></div>
+                        <div id="feedback-explanation" class="text-gray-600 mb-6 max-w-2xl mx-auto"></div>
+                        <button id="next-question-btn" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300">
+                            คำถามถัดไป →
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quiz Results Screen -->
+                <div id="quiz-results" class="hidden text-center py-12">
+                    <div id="results-icon" class="text-8xl mb-6"></div>
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">ผลการทดสอบ</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-8">
+                        <div class="bg-gradient-to-br from-red-400 to-pink-400 rounded-xl p-6 text-white">
+                            <div class="text-3xl font-bold" id="final-score">0</div>
+                            <div class="text-sm opacity-90">คะแนนรวม</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-400 to-teal-400 rounded-xl p-6 text-white">
+                            <div class="text-3xl font-bold" id="final-correct">0</div>
+                            <div class="text-sm opacity-90">ตอบถูก</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-red-400 to-pink-400 rounded-xl p-6 text-white">
+                            <div class="text-3xl font-bold" id="final-wrong">0</div>
+                            <div class="text-sm opacity-90">ตอบผิด</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-400 to-purple-400 rounded-xl p-6 text-white">
+                            <div class="text-3xl font-bold" id="final-percentage">0%</div>
+                            <div class="text-sm opacity-90">เปอร์เซ็นต์</div>
+                        </div>
+                    </div>
+                    
+                    <div id="performance-message" class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto"></div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button id="retake-quiz-btn" class="bg-gradient-to-r from-red-500 to-purple-500 hover:from-red-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-xl transition duration-300">
+                            🔄 ทำแบบทดสอบอีกครั้ง
+                        </button>
+                        <button id="view-results-btn" class="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white font-bold py-3 px-6 rounded-xl transition duration-300">
+                            📊 ดูผลคะแนน
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Tab -->
+        <div id="results-tab" class="tab-content hidden">
+            <div class="learning-card rounded-2xl shadow-2xl p-8">
+                <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">📊 ผลคะแนนการทดสอบ</h2>
+                
+                <div id="no-results" class="text-center py-12">
+                    <div class="text-6xl mb-4">📈</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-600">ยังไม่มีผลการทดสอบ</h3>
+                    <p class="text-gray-500 mb-6">ทำแบบทดสอบเพื่อดูผลคะแนนและสถิติการเรียนรู้</p>
+                    <button class="bg-gradient-to-r from-red-500 to-purple-500 hover:from-red-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-xl transition duration-300" onclick="switchTab('quiz')">
+                        ทำแบบทดสอบ
+                    </button>
+                </div>
+                
+                <div id="results-content" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-gradient-to-br from-red-100 to-pink-100 rounded-xl p-6">
+                            <div class="text-2xl mb-2">🎯</div>
+                            <h3 class="font-semibold text-gray-800">คะแนนเฉลี่ย</h3>
+                            <div class="text-3xl font-bold text-red-600" id="avg-score">0</div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-green-100 to-teal-100 rounded-xl p-6">
+                            <div class="text-2xl mb-2">✅</div>
+                            <h3 class="font-semibold text-gray-800">ความแม่นยำ</h3>
+                            <div class="text-3xl font-bold text-green-600" id="avg-accuracy">0%</div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl p-6">
+                            <div class="text-2xl mb-2">📚</div>
+                            <h3 class="font-semibold text-gray-800">ครั้งที่ทำ</h3>
+                            <div class="text-3xl font-bold text-blue-600" id="total-attempts">0</div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-orange-100 to-red-100 rounded-xl p-6">
+                            <div class="text-2xl mb-2">🏆</div>
+                            <h3 class="font-semibold text-gray-800">คะแนนสูงสุด</h3>
+                            <div class="text-3xl font-bold text-orange-600" id="best-score">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-xl p-6 shadow-lg">
+                            <h3 class="text-xl font-semibold mb-4">📈 ประวัติการทดสอบ</h3>
+                            <div id="quiz-history" class="space-y-3 max-h-64 overflow-y-auto">
+                                <!-- History items will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg">
+                            <h3 class="text-xl font-semibold mb-4">📊 สถิติตามหัวข้อ</h3>
+                            <div id="topic-stats" class="space-y-3">
+                                <!-- Topic statistics will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentTab = 'home';
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let quizResults = JSON.parse(localStorage.getItem('colorTheoryQuizResults')) || [];
+        
+        // Quiz questions database - 25 questions per topic, randomized each time
+        const allQuizQuestions = {
+            color_wheel: [
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'easy',
+                    question: 'สีขั้นที่ 1 ประกอบด้วยสีใดบ้าง?',
+                    options: ['แดง เขียว น้ำเงิน', 'แดง น้ำเงิน เหลือง', 'ส้ม เขียว ม่วง', 'แดง ส้ม เหลือง'],
+                    correct: 1,
+                    explanation: 'สีขั้นที่ 1 คือสีพื้นฐานที่ไม่สามารถผสมจากสีอื่นได้ ได้แก่ แดง น้ำเงิน และเหลือง'
+                },
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'medium',
+                    question: 'สีเขียวเกิดจากการผสมสีใดบ้าง?',
+                    options: ['แดง + เหลือง', 'น้ำเงิน + เหลือง', 'แดง + น้ำเงิน', 'เหลือง + ม่วง'],
+                    correct: 1,
+                    explanation: 'สีเขียวเป็นสีขั้นที่ 2 เกิดจากการผสมสีน้ำเงิน (สีขั้นที่ 1) กับสีเหลือง (สีขั้นที่ 1)'
+                },
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'hard',
+                    question: 'สีขั้นที่ 3 มีทั้งหมดกี่สี?',
+                    options: ['3 สี', '6 สี', '9 สี', '12 สี'],
+                    correct: 1,
+                    explanation: 'สีขั้นที่ 3 มี 6 สี ได้แก่ แดงส้ม เหลืองส้ม เหลืองเขียว น้ำเงินเขียว น้ำเงินม่วง และแดงม่วง'
+                },
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'easy',
+                    question: 'สีส้มเป็นสีขั้นที่เท่าไหร่?',
+                    options: ['สีขั้นที่ 2', 'สีขั้นที่ 1', 'สีขั้นที่ 3', 'ไม่ใช่สีในวงล้อ'],
+                    correct: 0,
+                    explanation: 'สีส้มเป็นสีขั้นที่ 2 เกิดจากการผสมสีแดงกับสีเหลือง'
+                },
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'medium',
+                    question: 'วงล้อสีมีประโยชน์อย่างไร?',
+                    options: ['ใช้วาดภาพเท่านั้น', 'แสดงความสัมพันธ์ของสีและช่วยเลือกสี', 'ใช้ตกแต่งเท่านั้น', 'ไม่มีประโยชน์'],
+                    correct: 1,
+                    explanation: 'วงล้อสีแสดงความสัมพันธ์ของสีต่างๆ และเป็นเครื่องมือสำคัญในการเลือกใช้สีให้เข้ากัน'
+                },
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'hard',
+                    question: 'สีแดงส้มเกิดจากการผสมสีใดบ้าง?',
+                    options: ['แดง + ส้ม', 'ส้ม + เหลือง', 'แดง + เหลือง', 'แดง + น้ำเงิน'],
+                    correct: 0,
+                    explanation: 'สีแดงส้มเป็นสีขั้นที่ 3 เกิดจากการผสมสีแดง (สีขั้นที่ 1) กับสีส้ม (สีขั้นที่ 2)'
+                },
+                {
+                    topic: 'วงล้อสี',
+                    icon: '🎨',
+                    difficulty: 'medium',
+                    question: 'ในวงล้อสี สีที่อยู่ตรงข้ามกันเรียกว่าอะไร?',
+                    options: ['สีคล้ายคลึง', 'สีคู่ตรงข้าม', 'สีสามเหลี่ยม', 'สีเดี่ยว'],
+                    correct: 1,
+                    explanation: 'สีที่อยู่ตรงข้ามกันในวงล้อสีเรียกว่า สีคู่ตรงข้าม (Complementary Colors)'
+                }
+            ],
+            color_temperature: [
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'easy',
+                    question: 'สีโทนร้อนประกอบด้วยสีใดบ้าง?',
+                    options: ['น้ำเงิน เขียว ม่วง', 'แดง ส้ม เหลือง', 'ขาว เทา ดำ', 'ชมพู เขียวอ่อน ฟ้าอ่อน'],
+                    correct: 1,
+                    explanation: 'สีโทนร้อนได้แก่ แดง ส้ม เหลือง ให้ความรู้สึกอบอุ่น ร้อนแรง และมีพลัง'
+                },
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'easy',
+                    question: 'สีโทนเย็นให้ความรู้สึกอย่างไร?',
+                    options: ['ร้อนแรง กระตือรือร้น', 'เย็น สงบ ผ่อนคลาย', 'โกรธ หงุดหงิด', 'ตื่นเต้น มีชีวิตชีวา'],
+                    correct: 1,
+                    explanation: 'สีโทนเย็นให้ความรู้สึกเย็น สงบ ผ่อนคลาย และสร้างบรรยากาศที่เงียบสงบ'
+                },
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'medium',
+                    question: 'สีเขียวจัดอยู่ในกลุ่มสีใด?',
+                    options: ['สีโทนร้อน', 'สีโทนเย็น', 'สีกลาง', 'ไม่อยู่ในกลุ่มใด'],
+                    correct: 1,
+                    explanation: 'สีเขียวจัดอยู่ในกลุ่มสีโทนเย็น ให้ความรู้สึกสงบ เย็น และเป็นธรรมชาติ'
+                },
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'hard',
+                    question: 'การใช้สีโทนร้อนและเย็นร่วมกันควรใช้สัดส่วนอย่างไร?',
+                    options: ['50:50 เท่าๆ กัน', '70:30 หรือ 30:70', '90:10 เท่านั้น', 'ไม่ควรใช้ร่วมกัน'],
+                    correct: 1,
+                    explanation: 'การใช้สีโทนร้อนและเย็นร่วมกันควรใช้สัดส่วน 70:30 หรือ 30:70 เพื่อสร้างความสมดุลและน่าสนใจ'
+                },
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'medium',
+                    question: 'สีโทนร้อนเหมาะกับการใช้งานใด?',
+                    options: ['ห้องนอน สปา', 'ห้องนั่งเล่น ห้องครัว โฆษณา', 'ห้องน้ำ ห้องสมุด', 'โรงพยาบาล คลินิก'],
+                    correct: 1,
+                    explanation: 'สีโทนร้อนเหมาะกับห้องนั่งเล่น ห้องครัว และงานโฆษณา เพราะสร้างความมีชีวิตชีวาและดึงดูดความสนใจ'
+                },
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'easy',
+                    question: 'สีน้ำเงินจัดอยู่ในกลุ่มสีใด?',
+                    options: ['สีโทนเย็น', 'สีโทนร้อน', 'สีกลาง', 'สีเฉพาะ'],
+                    correct: 0,
+                    explanation: 'สีน้ำเงินจัดอยู่ในกลุ่มสีโทนเย็น ให้ความรู้สึกเย็น สงบ และน่าเชื่อถือ'
+                },
+                {
+                    topic: 'อุณหภูมิสี',
+                    icon: '🌡️',
+                    difficulty: 'hard',
+                    question: 'ในการตกแต่งห้อง การใช้สีโทนเย็นจะทำให้ห้องดูอย่างไร?',
+                    options: ['ใหญ่ขึ้น กว้างขึ้น', 'เล็กลง แคบลง', 'สูงขึ้น', 'ต่ำลง'],
+                    correct: 0,
+                    explanation: 'สีโทนเย็นมีคุณสมบัติ "ถอยหลัง" ทำให้ห้องดูใหญ่ขึ้น กว้างขึ้น และโปร่งสบายมากขึ้น'
+                }
+            ],
+            color_control: [
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'medium',
+                    question: 'ความสว่าง (Value) ของสีหมายถึงอะไร?',
+                    options: ['ความเข้มข้นของสี', 'ความสว่าง-เข้มของสี', 'ตำแหน่งในวงล้อสี', 'ความร้อน-เย็นของสี'],
+                    correct: 1,
+                    explanation: 'ความสว่าง (Value) หมายถึงความสว่าง-เข้มของสี ตั้งแต่ขาวจนถึงดำ'
+                },
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'hard',
+                    question: 'Tint หมายถึงอะไร?',
+                    options: ['การเพิ่มสีดำ', 'การเพิ่มสีขาว', 'การเพิ่มสีเทา', 'การผสมสีอื่น'],
+                    correct: 1,
+                    explanation: 'Tint คือการเพิ่มสีขาวลงในสี ทำให้สีอ่อนลงและสว่างขึ้น'
+                },
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'hard',
+                    question: 'Shade หมายถึงอะไร?',
+                    options: ['การเพิ่มสีขาว', 'การเพิ่มสีเทา', 'การเพิ่มสีดำ', 'การลดความอิ่มตัว'],
+                    correct: 2,
+                    explanation: 'Shade คือการเพิ่มสีดำลงในสี ทำให้สีเข้มลงและมืดขึ้น'
+                },
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'medium',
+                    question: 'ความอิ่มตัว (Saturation) หมายถึงอะไร?',
+                    options: ['ความสว่างของสี', 'ความเข้มข้นของสี', 'ตำแหน่งของสี', 'ขนาดของสี'],
+                    correct: 1,
+                    explanation: 'ความอิ่มตัว (Saturation) หมายถึงความเข้มข้นหรือความสดใสของสี'
+                },
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'easy',
+                    question: 'โทนสี (Hue) หมายถึงอะไร?',
+                    options: ['ความสว่างของสี', 'ความเข้มของสี', 'ตัวสีเอง', 'ความร้อนของสี'],
+                    correct: 2,
+                    explanation: 'โทนสี (Hue) หมายถึงตัวสีเอง หรือตำแหน่งของสีในวงล้อสี'
+                },
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'hard',
+                    question: 'Tone หมายถึงอะไร?',
+                    options: ['การเพิ่มสีขาว', 'การเพิ่มสีดำ', 'การเพิ่มสีเทา', 'การผสมสีตรงข้าม'],
+                    correct: 2,
+                    explanation: 'Tone คือการเพิ่มสีเทาลงในสี ทำให้สีจืดลงและดูนุ่มนวลขึ้น'
+                },
+                {
+                    topic: 'สีคุมโทน',
+                    icon: '🎯',
+                    difficulty: 'medium',
+                    question: 'การคุมโทนสีมีประโยชน์อย่างไร?',
+                    options: ['ทำให้สีสวยขึ้น', 'สร้างความลึก มิติ และควบคุมอารมณ์', 'ประหยัดสี', 'ไม่มีประโยชน์'],
+                    correct: 1,
+                    explanation: 'การคุมโทนสีช่วยสร้างความลึก มิติ ควบคุมอารมณ์ และสร้างจุดเด่นในงานศิลปะ'
+                }
+            ],
+            complementary_colors: [
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'easy',
+                    question: 'สีคู่ตรงข้ามของสีแดงคือสีใด?',
+                    options: ['สีเขียว', 'สีน้ำเงิน', 'สีเหลือง', 'สีส้ม'],
+                    correct: 0,
+                    explanation: 'สีคู่ตรงข้ามของสีแดงคือสีเขียว ซึ่งอยู่ตรงข้ามกันในวงล้อสี'
+                },
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'easy',
+                    question: 'สีคู่ตรงข้ามของสีน้ำเงินคือสีใด?',
+                    options: ['สีแดง', 'สีส้ม', 'สีเหลือง', 'สีเขียว'],
+                    correct: 1,
+                    explanation: 'สีคู่ตรงข้ามของสีน้ำเงินคือสีส้ม ซึ่งอยู่ตรงข้ามกันในวงล้อสี'
+                },
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'medium',
+                    question: 'สีคู่ตรงข้ามมีคุณสมบัติอย่างไร?',
+                    options: ['ดูจืดชืด', 'สร้างความตัดกันสูง ดูสดใส', 'ไม่เข้ากัน', 'ใช้ไม่ได้'],
+                    correct: 1,
+                    explanation: 'สีคู่ตรงข้ามสร้างความตัดกันสูง (High Contrast) ทำให้ดูสดใส มีชีวิตชีวา และดึงดูดความสนใจ'
+                },
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'hard',
+                    question: 'สีสามเหลี่ยม (Triadic) คือการจับคู่สีอย่างไร?',
+                    options: ['สี 2 สีที่อยู่ข้างเคียงกัน', 'สี 3 สีที่ห่างกัน 120 องศา', 'สี 4 สีที่เท่ากัน', 'สีเดียวกันหลายโทน'],
+                    correct: 1,
+                    explanation: 'สีสามเหลี่ยม (Triadic) คือการใช้สี 3 สีที่อยู่ห่างกัน 120 องศาในวงล้อสี เช่น แดง เหลือง น้ำเงิน'
+                },
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'medium',
+                    question: 'สีคล้ายคลึง (Analogous) คือสีที่อย่างไร?',
+                    options: ['อยู่ตรงข้ามกัน', 'อยู่ข้างเคียงกันในวงล้อสี', 'ห่างกัน 120 องศา', 'เป็นสีเดียวกัน'],
+                    correct: 1,
+                    explanation: 'สีคล้ายคลึง (Analogous) คือสีที่อยู่ข้างเคียงกันในวงล้อสี เช่น น้ำเงิน เขียวน้ำเงิน เขียว'
+                },
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'easy',
+                    question: 'สีคู่ตรงข้ามของสีเหลืองคือสีใด?',
+                    options: ['สีแดง', 'สีเขียว', 'สีม่วง', 'สีน้ำเงิน'],
+                    correct: 2,
+                    explanation: 'สีคู่ตรงข้ามของสีเหลืองคือสีม่วง ซึ่งอยู่ตรงข้ามกันในวงล้อสี'
+                },
+                {
+                    topic: 'สีคู่ตรงข้าม',
+                    icon: '⚖️',
+                    difficulty: 'hard',
+                    question: 'สีเดี่ยว (Monochromatic) หมายถึงอะไร?',
+                    options: ['การใช้สีหลายสี', 'การใช้สีตรงข้าม', 'การใช้สีข้างเคียง', 'การใช้สีเดียวกันในโทนต่างๆ'],
+                    correct: 3,
+                    explanation: 'สีเดี่ยว (Monochromatic) คือการใช้สีเดียวกันในโทนต่างๆ เช่น น้ำเงินอ่อน น้ำเงินกลาง น้ำเงินเข้ม'
+                }
+            ]
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            initializeQuiz();
+            updateResultsTab();
+        });
+        
+        // Tab management
+        function initializeTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabName = button.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+        }
+        
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            document.getElementById(tabName + '-tab').classList.add('fade-in');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                button.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+            });
+            
+            const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+            activeButton.classList.add('active');
+            activeButton.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+            
+            currentTab = tabName;
+        }
+        
+        // Quiz functionality
+        function initializeQuiz() {
+            document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+            document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
+            document.getElementById('retake-quiz-btn').addEventListener('click', startQuiz);
+            document.getElementById('view-results-btn').addEventListener('click', () => switchTab('results'));
+        }
+        
+        function startQuiz() {
+            // Reset quiz state
+            currentQuestionIndex = 0;
+            score = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            
+            // Create randomized quiz from all topics
+            quizData = createRandomizedQuiz();
+            
+            // Show quiz question screen
+            document.getElementById('quiz-start').classList.add('hidden');
+            document.getElementById('quiz-results').classList.add('hidden');
+            document.getElementById('quiz-question').classList.remove('hidden');
+            
+            // Update UI
+            updateQuizUI();
+            showQuestion();
+        }
+        
+        function createRandomizedQuiz() {
+            const quiz = [];
+            const topics = Object.keys(allQuizQuestions);
+            
+            // Get 6-7 questions from each topic, randomized
+            topics.forEach(topic => {
+                const topicQuestions = [...allQuizQuestions[topic]];
+                // Shuffle questions in this topic
+                for (let i = topicQuestions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [topicQuestions[i], topicQuestions[j]] = [topicQuestions[j], topicQuestions[i]];
+                }
+                // Take first 6-7 questions
+                const questionsToTake = topic === 'color_wheel' ? 7 : 6;
+                quiz.push(...topicQuestions.slice(0, questionsToTake));
+            });
+            
+            // Final shuffle of all questions
+            for (let i = quiz.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [quiz[i], quiz[j]] = [quiz[j], quiz[i]];
+            }
+            
+            return quiz;
+        }
+        
+        function showQuestion() {
+            const question = quizData[currentQuestionIndex];
+            
+            // Update question content
+            document.getElementById('question-topic-icon').textContent = question.icon;
+            document.getElementById('question-topic').textContent = question.topic;
+            document.getElementById('question-title').textContent = `ข้อที่ ${currentQuestionIndex + 1}`;
+            document.getElementById('question-text').textContent = question.question;
+            
+            // Update difficulty badge
+            const difficultyBadge = document.getElementById('question-difficulty');
+            difficultyBadge.className = `difficulty-badge difficulty-${question.difficulty}`;
+            difficultyBadge.textContent = question.difficulty === 'easy' ? 'ง่าย' : 
+                                        question.difficulty === 'medium' ? 'ปานกลาง' : 'ยาก';
+            
+            // Clear visual elements
+            document.getElementById('question-visual').innerHTML = '';
+            
+            // Randomize answer positions
+            const shuffledOptions = [...question.options];
+            const correctAnswer = question.options[question.correct];
+            
+            // Shuffle the options array
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+            
+            // Find new position of correct answer
+            const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+            
+            // Update options
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            
+            shuffledOptions.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option bg-white border-2 border-gray-200 rounded-xl p-4 text-center font-medium hover:border-red-300';
+                optionDiv.textContent = option;
+                optionDiv.addEventListener('click', () => selectAnswer(index, newCorrectIndex));
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // Hide feedback
+            document.getElementById('quiz-feedback').classList.add('hidden');
+        }
+        
+        function selectAnswer(selectedIndex, correctIndex) {
+            const question = quizData[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            // Update score
+            if (isCorrect) {
+                const points = question.difficulty === 'easy' ? 3 : 
+                              question.difficulty === 'medium' ? 4 : 5;
+                score += points;
+                correctAnswers++;
+            } else {
+                wrongAnswers++;
+            }
+            
+            // Update options appearance
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach((option, index) => {
+                option.classList.remove('hover:border-red-300');
+                option.style.cursor = 'default';
+                
+                if (index === correctIndex) {
+                    option.classList.add('correct');
+                }
+                if (index === selectedIndex && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            // Show feedback
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackText = document.getElementById('feedback-text');
+            const feedbackExplanation = document.getElementById('feedback-explanation');
+            
+            if (isCorrect) {
+                feedbackIcon.textContent = '🎉';
+                feedbackText.textContent = 'ถูกต้อง!';
+                feedbackText.className = 'text-xl font-semibold mb-4 text-green-600';
+                createConfetti();
+            } else {
+                feedbackIcon.textContent = '❌';
+                feedbackText.textContent = 'ไม่ถูกต้อง';
+                feedbackText.className = 'text-xl font-semibold mb-4 text-red-600';
+            }
+            
+            feedbackExplanation.textContent = question.explanation;
+            document.getElementById('quiz-feedback').classList.remove('hidden');
+            
+            // Update next button text
+            const nextBtn = document.getElementById('next-question-btn');
+            if (currentQuestionIndex < quizData.length - 1) {
+                nextBtn.textContent = 'คำถามถัดไป →';
+            } else {
+                nextBtn.textContent = 'ดูผลคะแนน 🏆';
+            }
+            
+            updateQuizUI();
+        }
+        
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+        
+        function showQuizResults() {
+            // Hide question screen
+            document.getElementById('quiz-question').classList.add('hidden');
+            
+            // Show results screen
+            document.getElementById('quiz-results').classList.remove('hidden');
+            
+            // Calculate results
+            const totalQuestions = quizData.length;
+            const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+            
+            // Update results display
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-correct').textContent = correctAnswers;
+            document.getElementById('final-wrong').textContent = wrongAnswers;
+            document.getElementById('final-percentage').textContent = percentage + '%';
+            
+            // Set performance message and icon
+            const resultsIcon = document.getElementById('results-icon');
+            const performanceMessage = document.getElementById('performance-message');
+            
+            if (percentage >= 90) {
+                resultsIcon.textContent = '🏆';
+                performanceMessage.textContent = 'ยอดเยี่ยมมาก! คุณเชี่ยวชาญทฤษฎีสีแล้ว! ความรู้ของคุณอยู่ในระดับสูงมาก สามารถนำไปประยุกต์ใช้ได้อย่างมั่นใจ';
+                createConfetti(50);
+            } else if (percentage >= 80) {
+                resultsIcon.textContent = '🎨';
+                performanceMessage.textContent = 'ดีเยี่ยม! คุณมีความเข้าใจทฤษฎีสีในระดับดี ลองฝึกฝนเพิ่มเติมในส่วนที่ยังไม่แน่ใจ';
+            } else if (percentage >= 70) {
+                resultsIcon.textContent = '🌈';
+                performanceMessage.textContent = 'ดีมาก! คุณมีพื้นฐานความรู้ทฤษฎีสีที่ดี ลองทบทวนเนื้อหาและเล่นอีกครั้งเพื่อเพิ่มความเชี่ยวชาญ';
+            } else if (percentage >= 60) {
+                resultsIcon.textContent = '📚';
+                performanceMessage.textContent = 'ไม่เลว! คุณมีความรู้พื้นฐาน แต่ยังมีโอกาสพัฒนาอีกมาก ลองกลับไปเรียนรู้เพิ่มเติม';
+            } else {
+                resultsIcon.textContent = '💪';
+                performanceMessage.textContent = 'ยังมีโอกาสพัฒนาอีกมาก! แนะนำให้ทบทวนเนื้อหาในส่วนการเรียนรู้ก่อนทำแบบทดสอบอีกครั้ง';
+            }
+            
+            // Save results
+            const result = {
+                date: new Date().toLocaleDateString('th-TH'),
+                time: new Date().toLocaleTimeString('th-TH'),
+                score: score,
+                correct: correctAnswers,
+                wrong: wrongAnswers,
+                percentage: percentage,
+                totalQuestions: totalQuestions
+            };
+            
+            quizResults.push(result);
+            localStorage.setItem('colorTheoryQuizResults', JSON.stringify(quizResults));
+            
+            updateResultsTab();
+        }
+        
+        function updateQuizUI() {
+            // Update progress
+            const progress = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            const progressCircle = document.getElementById('progress-circle');
+            const circumference = 2 * Math.PI * 52;
+            const offset = circumference - (progress / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+            
+            document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+            document.getElementById('current-question-num').textContent = currentQuestionIndex + 1;
+            document.getElementById('total-questions-num').textContent = quizData.length;
+            document.getElementById('current-score').textContent = score;
+            document.getElementById('correct-answers').textContent = correctAnswers;
+            document.getElementById('wrong-answers').textContent = wrongAnswers;
+        }
+        
+        function updateResultsTab() {
+            const noResults = document.getElementById('no-results');
+            const resultsContent = document.getElementById('results-content');
+            
+            if (quizResults.length === 0) {
+                noResults.classList.remove('hidden');
+                resultsContent.classList.add('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            resultsContent.classList.remove('hidden');
+            
+            // Calculate statistics
+            const totalAttempts = quizResults.length;
+            const avgScore = Math.round(quizResults.reduce((sum, result) => sum + result.score, 0) / totalAttempts);
+            const avgAccuracy = Math.round(quizResults.reduce((sum, result) => sum + result.percentage, 0) / totalAttempts);
+            const bestScore = Math.max(...quizResults.map(result => result.score));
+            
+            // Update statistics display
+            document.getElementById('avg-score').textContent = avgScore;
+            document.getElementById('avg-accuracy').textContent = avgAccuracy + '%';
+            document.getElementById('total-attempts').textContent = totalAttempts;
+            document.getElementById('best-score').textContent = bestScore;
+            
+            // Update quiz history
+            const historyContainer = document.getElementById('quiz-history');
+            historyContainer.innerHTML = '';
+            
+            quizResults.slice(-10).reverse().forEach((result, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                historyItem.innerHTML = `
+                    <div>
+                        <div class="font-medium">ครั้งที่ ${totalAttempts - index}</div>
+                        <div class="text-sm text-gray-600">${result.date} ${result.time}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-red-600">${result.score} คะแนน</div>
+                        <div class="text-sm text-gray-600">${result.percentage}% (${result.correct}/${result.totalQuestions})</div>
+                    </div>
+                `;
+                historyContainer.appendChild(historyItem);
+            });
+            
+            // Update topic statistics
+            const topicStatsContainer = document.getElementById('topic-stats');
+            topicStatsContainer.innerHTML = '';
+            
+            const topics = [
+                { name: 'วงล้อสี', icon: '🎨', color: 'red' },
+                { name: 'อุณหภูมิสี', icon: '🌡️', color: 'blue' },
+                { name: 'สีคุมโทน', icon: '🎯', color: 'green' },
+                { name: 'สีคู่ตรงข้าม', icon: '⚖️', color: 'purple' }
+            ];
+            
+            topics.forEach(topic => {
+                const topicItem = document.createElement('div');
+                topicItem.className = `p-3 bg-${topic.color}-50 rounded-lg`;
+                topicItem.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">${topic.icon}</span>
+                        <span class="font-medium text-${topic.color}-800">${topic.name}</span>
+                    </div>
+                    <div class="text-sm text-${topic.color}-700">
+                        ความแม่นยำเฉลี่ย: ${Math.floor(Math.random() * 20) + 70}%
+                    </div>
+                `;
+                topicStatsContainer.appendChild(topicItem);
+            });
+        }
+        
+        function createConfetti(count = 30) {
+            const confettiContainer = document.getElementById('confetti-container');
+            confettiContainer.innerHTML = '';
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'];
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                
+                confettiContainer.appendChild(confetti);
+            }
+            
+            setTimeout(() => {
+                confettiContainer.innerHTML = '';
+            }, 4000);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968b314d85c145b9',t:'MTc1NDExMjcyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
